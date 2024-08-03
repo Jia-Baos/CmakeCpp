@@ -18,7 +18,7 @@ cmake -B build -G "MinGW Makefiles"
 cmake --build build --config Release --target install
 ```
 
-[Link](https://github.com/Jia-Baos/Notes/blob/master/CMake/cmake-command.md)
+[参考链接](https://github.com/Jia-Baos/Notes/blob/master/CMake/cmake-command.md)
 
 ### Linux
 
@@ -48,7 +48,9 @@ git rm -r --cached 3rdparty/benchmark
 git rm -r --cached 3rdparty/googletest
 ```
 
-## Bugs
+## 注意事项
+
+### 事项一
 
 在使用前面给的Linux编译命令后，使用vs-code中的快捷键编译提示没有权限
 
@@ -56,7 +58,7 @@ git rm -r --cached 3rdparty/googletest
 CMake Error: : System Error: Permission denied
 ```
 
-推测原因为建立文件夹时没有使用```sudo```权限，使得用快捷键进行编译时没有写入权限，实测删除build文件夹后，重新编译其可
+推测原因为建立文件夹时使用```sudo```权限，使得用快捷键进行编译时没有写入权限，实测删除build文件夹后，重新编译其可
 
 递归修改文件夹的权限目前无法解决上述问题，有待进一步探索（时间：2024-06-09 22：02）
 
@@ -65,3 +67,19 @@ sudo chmod -R 777 [Dir]
 ```
 
 问题定位及解决方案：新建build文件夹及执行cmake命令时，不要使用```sudo```权限。
+
+### 事项二
+
+在安装 CUDA 版本的 Pytorch 后，C++代码工程出现无法找到 CUDA 库的问题，经过定位发现Cmake中缺失了 CUDA 相关的 ```.cmake``` 文件，后重新安装 Cmake 解决问题。
+
+### 事项三
+
+在安装CUDA、cuDnn、TensorRT过程中，可能无错误出现，但对于代码工程如 ```TensorRT-build``` ，执行过程中提示函数没有找到，也有人说此问题在于GPU显存不够，后测试多个版本后发现代码工程无问题，现给出目前可正常使用的搭配。
+
+```
+cuda_11.8.0_520.61.05_linux.run
+cudnn-linux-x86_64-8.6.0.163_cuda11-archive.tar.xz
+TensorRT-8.5.3.1.Linux.x86_64-gnu.cuda-11.8.cudnn8.6.tar.gz
+```
+
+

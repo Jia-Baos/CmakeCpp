@@ -3,8 +3,12 @@ cmake_minimum_required(VERSION 3.27)
 project(deploy)
 enable_language(CUDA)
 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 # 添加nvcc编译选项
-add_definitions("-gencode arch=compute_50,code=sm_50")
+# add_definitions("-gencode arch=compute_50,code=sm_50")
+set(CMAKE_CUDA_FLAGS "-gencode arch=compute_50,code=sm_50")
 
 # 定义项目版本号宏
 set(PROJECT_VERSION_MAJOR 1)
@@ -17,6 +21,12 @@ set(PROJECT_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT
 message(STATUS "Project Name: ${PROJECT_NAME}")
 message(STATUS "Project version: ${PROJECT_VERSION}")
 message(STATUS "Project Dir: ${CMAKE_CURRENT_SOURCE_DIR}")
+
+if(CMAKE_CUDA_COMPILER)
+    message(STATUS "Find CUDA !")
+else()
+    message(FATAL_ERROR "Not found CUDA!")
+endif()
  
 # 查找CUDAToolkit包
 find_package(CUDAToolkit REQUIRED)

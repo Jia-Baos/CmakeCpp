@@ -3,21 +3,23 @@ cmake_minimum_required(VERSION 3.27)
 project(app-cuda1)
 enable_language(CUDA)
 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 # 添加nvcc编译选项
-add_definitions("-gencode arch=compute_50,code=sm_50")
-# set(CUDA_NVCC_FLAGS "-gencode arch=compute_50,code=sm_50") # 已被弃用
+# add_definitions("-gencode arch=compute_50,code=sm_50")
+set(CMAKE_CUDA_FLAGS "-gencode arch=compute_50,code=sm_50")
 
 message(STATUS "Project Name: ${PROJECT_NAME}")
 message(STATUS "Project Dir: ${CMAKE_CURRENT_SOURCE_DIR}")
 
 add_subdirectory(cuda)
 
-# 设置CMake策略以抑制警告
-# cmake_policy(SET CMP0146 NEW)
- 
-# 设置CUDAToolkit路径
-# set(CUDAToolkit_ROOT /usr/local/cuda)
-# set(CMAKE_PREFIX_PATH ${CUDAToolkit_ROOT})
+if(CMAKE_CUDA_COMPILER)
+    message(STATUS "Find CUDA !")
+else()
+    message(FATAL_ERROR "Not found CUDA!")
+endif()
  
 # 查找CUDAToolkit包
 find_package(CUDAToolkit REQUIRED)

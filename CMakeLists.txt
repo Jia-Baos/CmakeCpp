@@ -7,8 +7,8 @@ include(${PROJECT_SOURCE_DIR}/func.cmake)
 message(STATUS "Project Name: ${PROJECT_NAME}")
 message(STATUS "Project Dir: ${CMAKE_CURRENT_SOURCE_DIR}")
 
-# # 指定生成类型
-# set(CMAKE_BUILD_TYPE "Debug")
+# 指定生成类型
+set(CMAKE_BUILD_TYPE "Debug")
 
 # # 设置编译器
 # set(CMAKE_C_COMPILER D:/MinGW-Posix/bin/gcc.exe)
