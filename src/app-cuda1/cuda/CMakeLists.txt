@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.27)
 
 project(deploy)
+
+set(CMAKE_CUDA_ARCHITECTURES 50)
+set(CMAKE_CUDA_COMPILER /usr/local/cuda-11.8/bin/nvcc)
+
 enable_language(CUDA)
 
 set(CMAKE_CXX_STANDARD 11)

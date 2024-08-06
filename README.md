@@ -70,7 +70,16 @@ sudo chmod -R 777 [Dir]
 
 ### 事项二
 
-在安装 CUDA 版本的 Pytorch 后，C++代码工程出现无法找到 CUDA 库的问题，经过定位发现Cmake中缺失了 CUDA 相关的 ```.cmake``` 文件，后重新安装 Cmake 解决问题。
+在安装 CUDA 版本的 Pytorch 后，C++代码工程出现无法找到 CUDA 库的问题，经过定位发现Cmake中缺失了 CUDA 相关的 ```.cmake``` 文件，后重新安装 Cmake 解决问题。后面再次出现上述问题，重装 Cmake 无法解决问题，后指定架构和编译器解决问题。
+
+```
+set(CMAKE_CUDA_ARCHITECTURES 50)
+set(CMAKE_CUDA_COMPILER /usr/local/cuda-11.8/bin/nvcc)
+
+enable_language(CUDA)   // enable_language()前添加CUDA相关定义
+```
+
+[参考链接](https://blog.csdn.net/qq_19449259/article/details/128001426)
 
 ### 事项三
 
