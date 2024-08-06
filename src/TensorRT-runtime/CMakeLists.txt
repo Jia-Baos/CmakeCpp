@@ -21,7 +21,7 @@ endif()
 
 # 添加nvcc编译选项
 # add_definitions("-gencode arch=compute_50,code=sm_50")
-set(CMAKE_CUDA_FLAGS "-gencode arch=compute_50,code=sm_50") # 根据您的 GPU 架构调整
+# set(CMAKE_CUDA_FLAGS "-gencode arch=compute_50,code=sm_50") # 根据您的 GPU 架构调整
 
 # TensorRT
 set(TensorRT_DIR "/usr/local/TensorRT-8.5.3.1")

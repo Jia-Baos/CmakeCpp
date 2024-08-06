@@ -80,6 +80,7 @@ enable_language(CUDA)   // enable_language()前添加CUDA相关定义
 ```
 
 [参考链接](https://blog.csdn.net/qq_19449259/article/details/128001426)
+[参考链接](https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#options-for-steering-gpu-code-generation)
 
 ### 事项三
 

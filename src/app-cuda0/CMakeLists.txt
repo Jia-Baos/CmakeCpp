@@ -12,7 +12,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # 添加nvcc编译选项
 # add_definitions("-gencode arch=compute_50,code=sm_50")
-set(CMAKE_CUDA_FLAGS "-gencode arch=compute_50,code=sm_50")
+# set(CMAKE_CUDA_FLAGS "-gencode arch=compute_50,code=sm_50")
 
 message(STATUS "Project Name: ${PROJECT_NAME}")
 message(STATUS "Project Dir: ${CMAKE_CURRENT_SOURCE_DIR}")

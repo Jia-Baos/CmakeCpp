@@ -12,7 +12,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # 添加nvcc编译选项
 # add_definitions("-gencode arch=compute_50,code=sm_50")
-set(CMAKE_CUDA_FLAGS "-gencode arch=compute_50,code=sm_50")
+# set(CMAKE_CUDA_FLAGS "-gencode arch=compute_50,code=sm_50")
 
 # 定义项目版本号宏
 set(PROJECT_VERSION_MAJOR 1)
