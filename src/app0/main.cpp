@@ -1,13 +1,15 @@
+#include <cstddef>
 #include <iostream>
+#include <ostream>
 #ifdef _WIN64
 #include <windows.h>
-#define OS_SLEEP(X) Sleep((X) * 1000) // Windows的Sleep单位是毫秒
+#define OS_SLEEP(X) Sleep((X) * 1000)  // Windows的Sleep单位是毫秒
 #elif _WIN32
 #include <windows.h>
-#define OS_SLEEP(X) Sleep((X) * 1000) // Windows的Sleep单位是毫秒
+#define OS_SLEEP(X) Sleep((X) * 1000)  // Windows的Sleep单位是毫秒
 #elif __linux__
 #include <unistd.h>
-#define OS_SLEEP(X) ::sleep(X) // Windows的Sleep单位是毫秒
+#define OS_SLEEP(X) ::sleep(X)  // Windows的Sleep单位是毫秒
 #endif
 
 #include "../MiniCircle/MiniCircle.hpp"
@@ -74,6 +76,10 @@ int main(int argc, char *argv[]) {
             << circle.center.my_y << " Radius: " << circle.radius << std::endl;
 
   OS_SLEEP(1);
+
+  for (size_t i = 0; i < 10; ++i) {
+    std::cout << "hello world" << std::endl;
+  }
 
   return 0;
 }

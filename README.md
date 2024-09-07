@@ -19,6 +19,8 @@ cmake --build build --config Release --target install
 ```
 
 [参考链接](https://github.com/Jia-Baos/Notes/blob/master/CMake/cmake-command.md)
+[参考链接](https://cmake.readthedocs.io/en/latest/index.html)
+[参考链接](https://cmake.org/cmake/help/latest/manual/cmake.1.html)
 
 ### Linux
 
@@ -94,5 +96,3 @@ cuda_11.8.0_520.61.05_linux.run
 cudnn-linux-x86_64-8.6.0.163_cuda11-archive.tar.xz
 TensorRT-8.5.3.1.Linux.x86_64-gnu.cuda-11.8.cudnn8.6.tar.gz
 ```
-
-
