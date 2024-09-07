@@ -83,6 +83,8 @@ enable_language(CUDA)   // enable_language()前添加CUDA相关定义
 
 [参考链接](https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#options-for-steering-gpu-code-generation)
 
+[参考链接](https://developer.nvidia.com/cuda-gpus#collapseOne)
+
 ### 事项三
 
 在安装CUDA、cuDnn、TensorRT过程中，可能无错误出现，但对于代码工程如 ```TensorRT-build``` ，执行过程中提示函数没有找到，也有人说此问题在于GPU显存不够，后测试多个版本后发现代码工程无问题，现给出目前可正常使用的搭配。
