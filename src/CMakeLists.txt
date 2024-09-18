@@ -6,6 +6,7 @@ add_subdirectory(MiniCircle)
 # 进入执行文件文件夹
 add_subdirectory(app0)
 # add_subdirectory(app1)
+add_subdirectory(app2)
 # add_subdirectory(CmakeEigen)
 # add_subdirectory(CmakeMat)
 # add_subdirectory(DBSCAN)
