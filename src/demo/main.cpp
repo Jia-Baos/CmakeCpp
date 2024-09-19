@@ -57,7 +57,7 @@ void task1(std::promise<bool> prom) {
 
 void task2(std::future<bool> fut) {
   std::cout << "task2 start, " << fut.valid() << std::endl;
-  fut.get();
+  std::cout << "fut val: " << fut.get() << std::endl;
   std::cout << "task2 end, " << fut.valid() << std::endl;
 }
 
@@ -89,7 +89,7 @@ int main() {
   std::thread t1(task1, std::move(prom));
   std::thread t2(task2, std::move(fut));
 
-  t1.join();
+  t1.detach();
   t2.join();
 
   return 0;
