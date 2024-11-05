@@ -12,6 +12,8 @@ add_subdirectory(spdlog_demo)
 add_subdirectory(eigen_demo)
 add_subdirectory(rangeV3_demo)
 
+add_subdirectory(serial_tools)
+
 # add_subdirectory(app)
 # add_subdirectory(DBSCAN)
 # add_subdirectory(LeetCode)
