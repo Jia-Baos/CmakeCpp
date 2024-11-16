@@ -7,12 +7,13 @@ add_subdirectory(MiniCircle)
 add_subdirectory(mini_circle_demo)
 
 add_subdirectory(demo)
-add_subdirectory(fmt_demo)
-add_subdirectory(spdlog_demo)
-add_subdirectory(eigen_demo)
-add_subdirectory(rangeV3_demo)
+# add_subdirectory(fmt_demo)
+# add_subdirectory(spdlog_demo)
+# add_subdirectory(eigen_demo)
+# add_subdirectory(rangeV3_demo)
+# add_subdirectory(tcp_demo)
 
-add_subdirectory(serial_tools)
+# add_subdirectory(serial_tools)
 
 # add_subdirectory(app)
 # add_subdirectory(DBSCAN)
