@@ -6,14 +6,18 @@ add_subdirectory(MiniCircle)
 # 进入执行文件文件夹
 add_subdirectory(mini_circle_demo)
 
-add_subdirectory(demo)
-# add_subdirectory(fmt_demo)
-# add_subdirectory(spdlog_demo)
+# add_subdirectory(demo)
+add_subdirectory(fmt_demo)
+add_subdirectory(spdlog_demo)
 # add_subdirectory(eigen_demo)
 # add_subdirectory(rangeV3_demo)
 # add_subdirectory(tcp_demo)
+<<<<<<< HEAD
 
 add_subdirectory(serial_tools)
+=======
+# add_subdirectory(serial_tools)
+>>>>>>> 33144ebbca7a2c53df1707574e1a379611219c76
 
 # add_subdirectory(app)
 # add_subdirectory(DBSCAN)
