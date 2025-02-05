@@ -13,7 +13,7 @@ add_subdirectory(demo)
 # add_subdirectory(rangeV3_demo)
 # add_subdirectory(tcp_demo)
 
-# add_subdirectory(serial_tools)
+add_subdirectory(serial_tools)
 
 # add_subdirectory(app)
 # add_subdirectory(DBSCAN)
