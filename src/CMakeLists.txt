@@ -12,12 +12,7 @@ add_subdirectory(spdlog_demo)
 # add_subdirectory(eigen_demo)
 # add_subdirectory(rangeV3_demo)
 # add_subdirectory(tcp_demo)
-<<<<<<< HEAD
-
-add_subdirectory(serial_tools)
-=======
 # add_subdirectory(serial_tools)
->>>>>>> 33144ebbca7a2c53df1707574e1a379611219c76
 
 # add_subdirectory(app)
 # add_subdirectory(DBSCAN)
