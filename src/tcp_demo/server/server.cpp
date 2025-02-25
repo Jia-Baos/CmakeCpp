@@ -12,32 +12,15 @@
 
 class TcpServer {
 public:
-    TcpServer(const std::string &local_name, const std::string &remote_name)
-        : io_service_(),
-          socket_(io_service_),
-          acceptor_(io_service_),
-          deadline_(io_service_),
-          local_name_(local_name),
-          remote_name_(remote_name) {}
-
-    TcpServer(const std::string &host, const short port, const short timeout, const std::string &local_name, const std::string &remote_name)
+    TcpServer(const short port, const short timeout, const std::string &local_name)
         : io_service_(),
           socket_(io_service_),
           acceptor_(io_service_, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
           deadline_(io_service_),
           timeout_(timeout),
-          local_name_(local_name),
-          remote_name_(remote_name)
+          local_name_(local_name)
     {
-        boost::asio::ip::tcp::resolver resolver(io_service_);
-        boost::asio::ip::tcp::resolver::query query(host, std::to_string(port));
-        endpoint_iterator_ = resolver.resolve(query);
-
-        // acceptor_ = boost::asio::ip::tcp::acceptor(io_service_, *endpoint_iterator_);
-        // acceptor_.open(boost::asio::ip::tcp::v4());
-        // acceptor_.bind(*endpoint_iterator_);
-
-        StartAccept();
+        StartAccept(); // Automatically start accepting connections
     }
 
     ~TcpServer()
@@ -67,9 +50,6 @@ public:
         std::string local_ip = socket_.local_endpoint(endpoint_error).address().to_string();
         std::string local_port = std::to_string(socket_.local_endpoint(endpoint_error).port());
 
-        std::string remote_ip = socket_.remote_endpoint(endpoint_error).address().to_string();
-        std::string remote_port = std::to_string(socket_.remote_endpoint(endpoint_error).port());
-
         boost::system::error_code shutdown_error;
         socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, shutdown_error);
 
@@ -79,13 +59,13 @@ public:
 
         if (endpoint_error) {
             throw boost::system::system_error(endpoint_error,
-                                              local_name_ + " --> " + remote_name_ + " connection closure endpoint error");
+                                              local_name_ + " --> " + " connection closure endpoint error");
         } else if (shutdown_error) {
             throw boost::system::system_error(shutdown_error,
-                                              local_name_ + " --> " + remote_name_ + " connection closure shutdown error");
+                                              local_name_ + " --> " + " connection closure shutdown error");
         } else if (close_error) {
             throw boost::system::system_error(close_error,
-                                              local_name_ + " --> " + remote_name_ + " connection closure close error");
+                                              local_name_ + " --> " + " connection closure close error");
         }
     }
 
@@ -122,18 +102,18 @@ public:
 
             if (endpoint_error) {
                 throw boost::system::system_error(endpoint_error,
-                                                  local_name_ + " --> " + remote_name_ + " connection closure endpoint_error");
+                                                  local_name_ + " --> " + " connection closure endpoint_error");
             } else if (close_error) {
                 throw boost::system::system_error(close_error,
-                                                  local_name_ + " --> " + remote_name_ + " connection closure close_error");
+                                                  local_name_ + " --> " + " connection closure close_error");
             }
 
             if (accept_result.value() == boost::asio::error::operation_aborted) {
                 throw boost::system::system_error(accept_result.value(),
-                                                  local_name_ + " --> " + remote_name_ + " connection timeout");
+                                                  local_name_ + " --> " + " connection timeout");
             } else {
                 throw boost::system::system_error(accept_result.value(),
-                                                  local_name_ + " --> " + remote_name_ + " connection internal error");
+                                                  local_name_ + " --> " + " connection internal error");
             }
         }
     }
@@ -186,18 +166,18 @@ public:
 
             if (endpoint_error) {
                 throw boost::system::system_error(endpoint_error,
-                                                  local_name_ + " --> " + remote_name_ + " connection closure endpoint_error");
+                                                  local_name_ + " --> " + " connection closure endpoint_error");
             } else if (close_error) {
                 throw boost::system::system_error(close_error,
-                                                  local_name_ + " --> " + remote_name_ + " connection closure close_error");
+                                                  local_name_ + " --> " + " connection closure close_error");
             }
 
             if (write_result.value() == boost::asio::error::operation_aborted) {
                 throw boost::system::system_error(write_result.value(),
-                                                  local_name_ + " --> " + remote_name_ + " connection timeout");
+                                                  local_name_ + " --> " + " connection timeout");
             } else {
                 throw boost::system::system_error(write_result.value(),
-                                                  local_name_ + " --> " + remote_name_ + " connection internal error");
+                                                  local_name_ + " --> " + " connection internal error");
             }
         }
 
@@ -259,18 +239,18 @@ public:
 
             if (endpoint_error) {
                 throw boost::system::system_error(endpoint_error,
-                                                  local_name_ + " --> " + remote_name_ + " connection closure endpoint_error");
+                                                  local_name_ + " --> " + " connection closure endpoint_error");
             } else if (close_error) {
                 throw boost::system::system_error(close_error,
-                                                  local_name_ + " --> " + remote_name_ + " connection closure close_error");
+                                                  local_name_ + " --> " + " connection closure close_error");
             }
 
             if (read_result.value() == boost::asio::error::operation_aborted) {
                 throw boost::system::system_error(read_result.value(),
-                                                  local_name_ + " --> " + remote_name_ + " connection timeout");
+                                                  local_name_ + " --> " + " connection timeout");
             } else {
                 throw boost::system::system_error(read_result.value(),
-                                                  local_name_ + " --> " + remote_name_ + " connection internal error");
+                                                  local_name_ + " --> " + " connection internal error");
             }
         }
 
@@ -296,6 +276,9 @@ public:
             std::cout << "End of file. Client has closed the connection." << std::endl;
             // 客户端已经关闭连接，不重新启动读取操作
             StartAccept();
+        } else if (error == boost::asio::error::connection_reset) {
+            std::cout << "Connection reset by peer. The client disconnected abruptly." << std::endl;
+            StartAccept();
         } else {
             std::cout << "Error during read: " << error.message() << std::endl;
         }
@@ -311,7 +294,6 @@ private:
 
     short timeout_;
     std::string local_name_;
-    std::string remote_name_;
 
     enum { kMaxLength = 1024 };
     char data_[kMaxLength];
@@ -320,7 +302,7 @@ private:
 int main()
 {
     try {
-        TcpServer server("localhost", 12345, 3000, "local", "remote"); // 连接到本地服务端12345端口
+        TcpServer server(12345, 3000, "local"); // 连接到本地服务端12345端口
         server.StartRead();
     }
     catch (const std::exception &e) {
