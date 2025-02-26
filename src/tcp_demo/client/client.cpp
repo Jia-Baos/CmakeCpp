@@ -192,11 +192,16 @@ public:
     void HandleConnect(boost::optional<boost::system::error_code> &conn_result, const boost::system::error_code &error)
     {
         conn_result.reset(error);
-        if (!error) {
-            std::cout << "Connected to server!" << std::endl;
-        } else {
-            std::cerr << "Error during connect: " << error.message() << std::endl;
-            this->StartConnect();
+        try {
+            if (!error) {
+                std::cout << "Connected to server!" << std::endl;
+            } else {
+                std::cerr << "Error during connect: " << error.message() << std::endl;
+                this->StartConnect();
+            }
+        }
+        catch (const boost::system::system_error &e) {
+            std::cerr << e.what() << std::endl;
         }
     }
 

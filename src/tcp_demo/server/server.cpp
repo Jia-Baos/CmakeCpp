@@ -20,14 +20,14 @@ public:
           timeout_(timeout),
           local_name_(local_name)
     {
-        StartAccept(); // Automatically start accepting connections
+        this->StartAccept(); // Automatically start accepting connections
     }
 
     ~TcpServer()
     {
         if (this->IsOpen()) {
             try {
-                Close();
+                this->Close();
             }
             catch (const boost::system::system_error &e) {
                 std::cerr << e.what() << std::endl;
@@ -47,25 +47,36 @@ public:
         }
 
         boost::system::error_code endpoint_error;
+        // 获取端点信息可能失败（例如套接字未连接）
         std::string local_ip = socket_.local_endpoint(endpoint_error).address().to_string();
         std::string local_port = std::to_string(socket_.local_endpoint(endpoint_error).port());
 
         boost::system::error_code shutdown_error;
-        socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, shutdown_error);
+        if (this->IsOpen()) {
+            socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, shutdown_error);
+            // 忽略 "not connected" 错误
+            if (shutdown_error && shutdown_error != boost::asio::error::not_connected && shutdown_error != boost::asio::error::bad_descriptor) {
+                throw boost::system::system_error(shutdown_error,
+                                                  local_name_ + " --> " + " connection closure shutdown error");
+            }
+        }
 
         boost::system::error_code close_error;
-        socket_.close(close_error);
+        if (this->IsOpen()) {
+            socket_.close(close_error);
+            // 忽略 "not connected" 错误
+            if (close_error && close_error != boost::asio::error::not_connected && close_error != boost::asio::error::bad_descriptor) {
+                throw boost::system::system_error(close_error,
+                                                  local_name_ + " --> " + " connection closure close error");
+            }
+        }
+
         io_service_.restart(); // 如果在指定的超时时间内没有连接成功，定时器将执行回调函数
 
-        if (endpoint_error) {
+        // 处理端点错误（非致命）
+        if (endpoint_error && endpoint_error != boost::asio::error::not_connected && endpoint_error != boost::asio::error::bad_descriptor) {
             throw boost::system::system_error(endpoint_error,
                                               local_name_ + " --> " + " connection closure endpoint error");
-        } else if (shutdown_error) {
-            throw boost::system::system_error(shutdown_error,
-                                              local_name_ + " --> " + " connection closure shutdown error");
-        } else if (close_error) {
-            throw boost::system::system_error(close_error,
-                                              local_name_ + " --> " + " connection closure close error");
         }
     }
 
@@ -74,6 +85,9 @@ public:
         if (this->IsOpen()) {
             this->Close();
         }
+
+        // 创建新的套接字对象
+        socket_ = boost::asio::ip::tcp::socket(io_service_);
 
         boost::optional<boost::system::error_code> timer_result;
         deadline_.expires_after(boost::asio::chrono::milliseconds(timeout_));
@@ -121,18 +135,23 @@ public:
     void HandleAccept(boost::optional<boost::system::error_code> &accept_result, const boost::system::error_code &error)
     {
         accept_result.reset(error);
-        if (!error) {
-            std::cout << "Client connected!" << std::endl;
+        try {
+            if (!error) {
+                std::cout << "Client connected!" << std::endl;
 
-            auto read_res = this->StartRead(); // 处理客户端请求并返回响应
-            if (read_res) {
-                std::cout << "server, read message successed." << std::endl;
+                auto read_res = this->StartRead(); // 处理客户端请求并返回响应
+                if (read_res) {
+                    std::cout << "server, read message successed." << std::endl;
+                }
+
+            } else {
+                std::cout << "Error during accept: " << error.message() << std::endl;
+                // 继续接受下一个连接
+                this->StartAccept();
             }
-
-        } else {
-            std::cout << "Error during accept: " << error.message() << std::endl;
-            // 继续接受下一个连接
-            StartAccept();
+        }
+        catch (const boost::system::system_error &e) {
+            std::cerr << e.what() << std::endl;
         }
     }
 
@@ -191,12 +210,17 @@ public:
     void HandleWrite(boost::optional<boost::system::error_code> &write_result, const boost::system::error_code &error)
     {
         write_result.reset(error);
-        if (!error) {
-            std::cout << "Message sent to client!" << std::endl;
+        try {
+            if (!error) {
+                std::cout << "Message sent to client!" << std::endl;
+                auto read_res = this->StartRead(); // 处理客户端请求并返回响应
 
-            auto read_res = this->StartRead(); // 处理客户端请求并返回响应
-        } else {
-            std::cerr << "Error during write: " << error.message() << std::endl;
+            } else {
+                std::cerr << "Error during write: " << error.message() << std::endl;
+            }
+        }
+        catch (const boost::system::system_error &e) {
+            std::cerr << e.what() << std::endl;
         }
     }
 
@@ -264,23 +288,27 @@ public:
     void HandleRead(boost::optional<boost::system::error_code> &read_result, const boost::system::error_code &error, const size_t length)
     {
         read_result.reset(error);
-        if (!error) {
-            std::cout << "Received: " << std::string(data_, length) << std::endl;
+        try {
+            if (!error) {
+                std::cout << "Received: " << std::string(data_, length) << std::endl;
 
-            auto write_res = this->StartWrite("hello world too", 200);
-        } else if (error == boost::asio::error::operation_aborted) {
-            std::cout << "Error during read: Operation canceled. Waiting for new connection." << std::endl;
-            // 不要立即重新启动读取操作，等待新的连接
-            StartAccept();
-        } else if (error == boost::asio::error::eof) {
-            std::cout << "End of file. Client has closed the connection." << std::endl;
-            // 客户端已经关闭连接，不重新启动读取操作
-            StartAccept();
-        } else if (error == boost::asio::error::connection_reset) {
-            std::cout << "Connection reset by peer. The client disconnected abruptly." << std::endl;
-            StartAccept();
-        } else {
-            std::cout << "Error during read: " << error.message() << std::endl;
+                auto write_res = this->StartWrite("hello world too", 200);
+            } else {
+                if (error == boost::asio::error::operation_aborted) {
+                    std::cout << "Read operation canceled." << std::endl;
+                } else if (error == boost::asio::error::eof || error == boost::asio::error::connection_reset) {
+                    std::cout << "Client disconnected. Reason: " << error.message() << std::endl;
+                } else {
+                    std::cout << "Error during read: " << error.message() << std::endl;
+                }
+
+                this->Close(); // Close the socket gracefully
+                this->StartAccept();
+            }
+        }
+        catch (const boost::system::system_error &e) {
+            std::cerr << e.what() << std::endl;
+            this->StartAccept();
         }
     }
 
