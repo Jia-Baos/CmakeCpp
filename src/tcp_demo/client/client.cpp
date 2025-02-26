@@ -17,27 +17,29 @@ public:
           socket_(io_service_),
           deadline_(io_service_),
           local_name_(local_name),
-          remote_name_(remote_name) {}
+          remote_name_(remote_name)
+    {
+        // start connection manually
+    }
 
     TcpClient(const std::string &host, const short port, const short timeout, const std::string local_name, const std::string remote_name)
         : io_service_(),
           socket_(io_service_),
           deadline_(io_service_),
+          host_(host),
+          port_(port),
           timeout_(timeout),
           local_name_(local_name),
           remote_name_(remote_name)
     {
-        boost::asio::ip::tcp::resolver resolver(io_service_);
-        boost::asio::ip::tcp::resolver::query query(host, std::to_string(port));
-        endpoint_iterator_ = resolver.resolve(query);
-        StartConnect();
+        this->StartConnect(host_, port_, timeout_);
     }
 
     ~TcpClient()
     {
         if (this->IsOpen()) {
             try {
-                Close();
+                this->Close();
             }
             catch (const boost::system::system_error &e) {
                 std::cerr << e.what() << std::endl;
@@ -64,29 +66,41 @@ public:
         std::string remote_port = std::to_string(socket_.remote_endpoint(endpoint_error).port());
 
         boost::system::error_code shutdown_error;
-        socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, shutdown_error);
+        if (this->IsOpen()) {
+            socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, shutdown_error);
+            if (shutdown_error && shutdown_error != boost::asio::error::not_connected && shutdown_error != boost::asio::error::bad_descriptor) {
+                throw boost::system::system_error(shutdown_error,
+                                                  local_name_ + " --> " + remote_name_ + " connection closure shutdown error");
+            }
+        }
 
         boost::system::error_code close_error;
-        socket_.close(close_error);
+        if (this->IsOpen()) {
+            socket_.close(close_error);
+            if (close_error && close_error != boost::asio::error::not_connected && close_error != boost::asio::error::bad_descriptor) {
+                throw boost::system::system_error(close_error,
+                                                  local_name_ + " --> " + remote_name_ + " connection closure close error");
+            }
+        }
+
         io_service_.restart(); // 如果在指定的超时时间内没有连接成功，定时器将执行回调函数
 
-        if (endpoint_error) {
+        if (endpoint_error && endpoint_error != boost::asio::error::not_connected && endpoint_error != boost::asio::error::bad_descriptor) {
             throw boost::system::system_error(endpoint_error,
                                               local_name_ + " --> " + remote_name_ + " connection closure endpoint error");
-        } else if (shutdown_error) {
-            throw boost::system::system_error(shutdown_error,
-                                              local_name_ + " --> " + remote_name_ + " connection closure shutdown error");
-        } else if (close_error) {
-            throw boost::system::system_error(close_error,
-                                              local_name_ + " --> " + remote_name_ + " connection closure close error");
         }
     }
 
-    void StartConnect()
+    void StartConnect(const std::string &host, const short port, const short timeout)
     {
         if (this->IsOpen()) {
             this->Close();
         }
+
+        timeout_ = timeout;
+        boost::asio::ip::tcp::resolver resolver(io_service_);
+        boost::asio::ip::tcp::resolver::query query(host, std::to_string(port));
+        endpoint_iterator_ = resolver.resolve(query);
 
         boost::optional<boost::system::error_code> timer_result;
         deadline_.expires_after(boost::asio::chrono::milliseconds(timeout_));
@@ -94,8 +108,6 @@ public:
 
         boost::optional<boost::system::error_code> conn_result;
         async_connect(socket_, endpoint_iterator_, boost::bind(&TcpClient::HandleConnect, this, conn_result, boost::placeholders::_1));
-
-        io_service_.restart();
 
         auto flag = io_service_.run_one();
         while (flag) {
@@ -136,59 +148,6 @@ public:
         }
     }
 
-    void StartConnect(const std::string &host, const short port, const short timeout)
-    {
-        if (this->IsOpen()) {
-            this->Close();
-        }
-
-        timeout_ = timeout;
-        boost::asio::ip::tcp::resolver resolver(io_service_);
-        boost::asio::ip::tcp::resolver::query query(host, std::to_string(port));
-        endpoint_iterator_ = resolver.resolve(query);
-
-        boost::optional<boost::system::error_code> timer_result;
-        deadline_.expires_after(boost::asio::chrono::milliseconds(timeout_));
-        deadline_.async_wait([&timer_result](const boost::system::error_code &error) { timer_result.reset(error); });
-
-        boost::optional<boost::system::error_code> conn_result;
-        async_connect(socket_, endpoint_iterator_, boost::bind(&TcpClient::HandleConnect, this, conn_result, boost::placeholders::_1));
-
-        io_service_.restart();
-        while (io_service_.run_one()) {
-            if (conn_result.has_value()) {
-                deadline_.cancel();
-            } else if (timer_result.has_value()) {
-                socket_.cancel();
-            }
-        }
-
-        if (conn_result.has_value()) {
-            boost::system::error_code endpoint_error;
-            std::string local_ip = socket_.local_endpoint(endpoint_error).address().to_string();
-            std::string local_port = std::to_string(socket_.local_endpoint(endpoint_error).port());
-
-            boost::system::error_code close_error;
-            socket_.close(close_error);
-
-            if (endpoint_error) {
-                throw boost::system::system_error(endpoint_error,
-                                                  local_name_ + " --> " + remote_name_ + " connection closure endpoint_error");
-            } else if (close_error) {
-                throw boost::system::system_error(close_error,
-                                                  local_name_ + " --> " + remote_name_ + " connection closure close_error");
-            }
-
-            if (conn_result.value() == boost::asio::error::operation_aborted) {
-                throw boost::system::system_error(conn_result.value(),
-                                                  local_name_ + " --> " + remote_name_ + " connection timeout");
-            } else {
-                throw boost::system::system_error(conn_result.value(),
-                                                  local_name_ + " --> " + remote_name_ + " connection internal error");
-            }
-        }
-    }
-
     void HandleConnect(boost::optional<boost::system::error_code> &conn_result, const boost::system::error_code &error)
     {
         conn_result.reset(error);
@@ -197,7 +156,7 @@ public:
                 std::cout << "Connected to server!" << std::endl;
             } else {
                 std::cerr << "Error during connect: " << error.message() << std::endl;
-                this->StartConnect();
+                this->StartConnect(host_, port_, timeout_);
             }
         }
         catch (const boost::system::system_error &e) {
@@ -355,6 +314,9 @@ private:
     boost::asio::steady_timer deadline_;
     boost::asio::ip::tcp::resolver::iterator endpoint_iterator_;
 
+    short port_;
+    std::string host_;
+
     short timeout_;
     std::string local_name_;
     std::string remote_name_;
@@ -367,6 +329,7 @@ int main()
 {
     try {
         TcpClient client("localhost", 12345, 2000, "local", "remote"); // 连接到本地服务端12345端口
+        client.SetKeepAliveParam(true);
         while (true) {
             auto write_res = client.StartWrite("hello world", 200);
             if (write_res) {
