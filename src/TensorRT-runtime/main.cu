@@ -60,7 +60,7 @@ int main()
     // 读取文件
     auto engineModel = loadEngineModel("./mlp.engine");
     // 调用runtime的反序列化方法，生成engine，参数分别是：模型数据地址，模型大小，pluginFactory
-    nvinfer1::ICudaEngine *engine = runtime->deserializeCudaEngine(engineModel.data(), engineModel.size(), nullptr);
+    nvinfer1::ICudaEngine *engine = runtime->deserializeCudaEngine(static_cast<const void*>(engineModel.data()), engineModel.size());
 
     if (!engine)
     {
@@ -97,11 +97,22 @@ int main()
     // 参数分别是：目标地址，源地址，数据大小，拷贝方向
     cudaMemcpyAsync(device_input_data, host_input_data, input_data_size, cudaMemcpyHostToDevice, stream);
 
-    // bindings告诉Context输入输出数据的位置
-    float *bindings[] = {device_input_data, device_output_data};
+    // for (int i = 0; i < engine->getNbIOTensors(); ++i) {
+    //     const char *tensorName = engine->getIOTensorName(i);
+    //     auto mode = engine->getTensorIOMode(tensorName);
+    //     std::cout << "Tensor " << i << ": " << tensorName
+    //               << ", mode: " << (mode == nvinfer1::TensorIOMode::kINPUT ? "INPUT" : "OUTPUT") << std::endl;
+    // }
 
-    // ==================== 5. 执行推理 ====================
-    bool success = context->enqueueV2((void **)bindings, stream, nullptr);
+    // 设置输入张量地址
+    context->setInputTensorAddress("data", device_input_data); // "input_tensor_name" 替换为你的实际输入名
+
+    // 设置输出张量地址
+    context->setTensorAddress("output", device_output_data); // "output_tensor_name" 替换为你的实际输出名
+
+    // 执行推理
+    bool success = context->enqueueV3(stream);
+
     // 数据从device --> host
     cudaMemcpyAsync(host_output_data, device_output_data, output_data_size, cudaMemcpyDeviceToHost, stream);
     // 等待流执行完毕

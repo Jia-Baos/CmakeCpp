@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.27)
 
 project(deploy)
 
-set(CMAKE_CUDA_ARCHITECTURES 50)
-set(CMAKE_CUDA_COMPILER /usr/local/cuda-11.8/bin/nvcc)
+set(CMAKE_CUDA_ARCHITECTURES 86)
+set(CMAKE_CUDA_COMPILER /usr/local/cuda-12.6/bin/nvcc)
 
 enable_language(CUDA)
 
@@ -58,8 +58,10 @@ file(GLOB main_files ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp ${CMAKE_CURRENT_SOURCE_DI
 add_library(${PROJECT_NAME}_static STATIC ${main_files})
 add_library(${PROJECT_NAME}_shared SHARED ${main_files})
 
-set_target_properties(${PROJECT_NAME}_static PROPERTIES OUTPUT_NAME "${PROJECT_NAME}.${PROJECT_VERSION}")
-set_target_properties(${PROJECT_NAME}_shared PROPERTIES OUTPUT_NAME "${PROJECT_NAME}.${PROJECT_VERSION}")
+set_target_properties(${PROJECT_NAME}_static PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+set_target_properties(${PROJECT_NAME}_shared PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+# set_target_properties(${PROJECT_NAME}_static PROPERTIES OUTPUT_NAME "${PROJECT_NAME}.${PROJECT_VERSION}")
+# set_target_properties(${PROJECT_NAME}_shared PROPERTIES OUTPUT_NAME "${PROJECT_NAME}.${PROJECT_VERSION}")
 
 target_include_directories(${PROJECT_NAME}_static PRIVATE ${CUDAToolkit_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(${PROJECT_NAME}_shared PRIVATE ${CUDAToolkit_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})
@@ -68,9 +70,9 @@ target_link_libraries(${PROJECT_NAME}_static CUDA::cudart)
 target_link_libraries(${PROJECT_NAME}_shared CUDA::cudart)
 
 install(TARGETS ${PROJECT_NAME}_static ${PROJECT_NAME}_shared
-        ARCHIVE DESTINATION lib/${PROJECT_NAME}
-        LIBRARY DESTINATION lib/${PROJECT_NAME}
-        RUNTIME DESTINATION bin/${PROJECT_NAME})
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         DESTINATION ${CMAKE_INSTALL_PREFIX}/include

@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.27)
 
 project(app-cuda1)
 
-set(CMAKE_CUDA_ARCHITECTURES 50)
-set(CMAKE_CUDA_COMPILER /usr/local/cuda-11.8/bin/nvcc)
+set(CMAKE_CUDA_ARCHITECTURES 86)
+set(CMAKE_CUDA_COMPILER /usr/local/cuda-12.6/bin/nvcc)
 
 enable_language(CUDA)
 
@@ -49,19 +49,16 @@ endif()
 file(GLOB main_files ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/*.cu )
 add_executable(${PROJECT_NAME} ${main_files})
 
-# 设置目标属性
-# target_compile_features()
-# target_compile_definitions()
-# target_compile_options(${PROJECT_NAME} PUBLIC -fno-elide-constructors)
-
 # 链接库头文件路径
 target_include_directories(${PROJECT_NAME} PRIVATE ${CUDAToolkit_INCLUDE_DIRS})
 
+target_link_directories(${PROJECT_NAME} PRIVATE ${CMAKE_INSTALL_PREFIX}/lib)
+
 # 链接库文件夹
 # 如果动态链接库和静态链接库同名，优先调用静态链接库
-target_link_libraries(${PROJECT_NAME} CUDA::cudart deploy_shared)
+target_link_libraries(${PROJECT_NAME} PRIVATE CUDA::cudart deploy_shared)
 
 install(TARGETS ${PROJECT_NAME}
-        ARCHIVE DESTINATION lib/${PROJECT_NAME}
-        LIBRARY DESTINATION lib/${PROJECT_NAME}
-        RUNTIME DESTINATION bin/${PROJECT_NAME})
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin)
