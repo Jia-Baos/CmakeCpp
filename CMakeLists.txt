@@ -29,6 +29,10 @@ file(COPY ${PROJECT_SOURCE_DIR}/README.md DESTINATION ${PROJECT_SOURCE_DIR}/inst
 # 进入主工程文件夹
 add_subdirectory(src)
 
+# 编译 ApritlTag 代码
+add_subdirectory(3rdparty/apriltag)
+add_subdirectory(3rdparty/ethzasl_apriltag2)
+
 # #引入测试
 # add_subdirectory(googletest)
 

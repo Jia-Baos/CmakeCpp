@@ -16,3 +16,9 @@
 [submodule "3rdparty/range-v3"]
 	path = 3rdparty/range-v3
 	url = https://github.com/ericniebler/range-v3.git
+[submodule "3rdparty/apriltag"]
+	path = 3rdparty/apriltag
+	url = https://github.com/AprilRobotics/apriltag.git
+[submodule "3rdparty/ethzasl_apriltag2"]
+	path = 3rdparty/ethzasl_apriltag2
+	url = https://github.com/ethz-asl/ethzasl_apriltag2.git

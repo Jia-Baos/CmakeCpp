@@ -23,3 +23,6 @@ add_subdirectory(mini_circle_demo)
 # add_subdirectory(app-cuda1)
 # add_subdirectory(TensorRT-build)
 # add_subdirectory(TensorRT-runtime)
+
+add_subdirectory(apriltag)
+add_subdirectory(ethzasl_apriltag2)
