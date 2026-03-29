@@ -1,0 +1,42 @@
+cmake_minimum_required(VERSION 3.27)
+
+project(apriltag)
+
+# 定义项目版本号宏
+set(PROJECT_VERSION_MAJOR 1)
+set(PROJECT_VERSION_MINOR 0)
+set(PROJECT_VERSION_PATCH 0)
+
+# 生成版本号字符串
+set(PROJECT_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
+
+message(STATUS "Project Name: ${PROJECT_NAME}")
+message(STATUS "Project version: ${PROJECT_VERSION}")
+message(STATUS "Project Dir: ${CMAKE_CURRENT_SOURCE_DIR}")
+
+# file(GLOB FILES_SRC_APRILTAG ${CMAKE_CURRENT_SOURCE_DIR}/*.c ${CMAKE_CURRENT_SOURCE_DIR}/common/*.c)
+# file(GLOB FILES_HEADERS_APRILTAG ${CMAKE_CURRENT_SOURCE_DIR}/*.h ${CMAKE_CURRENT_SOURCE_DIR}/common/*.h)
+
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/common COMMON_SRC)
+
+set(APRILTAG_SRCS
+        ${CMAKE_CURRENT_SOURCE_DIR}/apriltag.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/apriltag_pose.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/apriltag_quad_thresh.c)
+
+# Library
+file(GLOB TAG_FILES ${CMAKE_CURRENT_SOURCE_DIR}/tag*.c)
+
+add_library(${PROJECT_NAME} SHARED ${APRILTAG_SRCS} ${COMMON_SRC} ${TAG_FILES})
+set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+
+target_include_directories(${PROJECT_NAME}
+        PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/common
+        )
+
+install(TARGETS ${PROJECT_NAME}
+        ARCHIVE DESTINATION lib/${PROJECT_NAME}
+        LIBRARY DESTINATION lib/${PROJECT_NAME}
+        RUNTIME DESTINATION bin/${PROJECT_NAME})
